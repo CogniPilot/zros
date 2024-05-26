@@ -77,9 +77,13 @@ int _zros_topic_read_lock(const struct zros_topic* topic)
 {
     __ASSERT(topic != NULL, "zros topic is null");
     struct k_sem* read = (struct k_sem*)&topic->_sem_read;
-    ZROS_RC(k_sem_take(read, g_topic_timeout),
-            LOG_ERR("take read failed\n");
-            return rc);
+    int ret = k_sem_take(read, g_topic_timeout);
+    if (ret < 0) {
+        char name[20];
+        zros_topic_get_name(topic, name, sizeof(name));
+        LOG_ERR("topic %s take read failed\n", name);
+        return ret;
+    }
     return ZROS_OK;
 };
 
