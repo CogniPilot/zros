@@ -42,18 +42,21 @@ int zros_sub_init(struct zros_sub* sub, struct zros_node* node, struct zros_topi
     k_poll_event_init(&sub->_event, K_POLL_TYPE_SIGNAL,
         K_POLL_MODE_NOTIFY_ONLY, &sub->_data_ready);
     sub->_node = node;
+    sub->_initialized = true;
     return zros_topic_add_sub(topic, sub);
 }
 
 int zros_sub_update(struct zros_sub* sub)
 {
     __ASSERT(sub != NULL, "zros sub is null");
+    __ASSERT(sub->_initialized, "zros sub not initialized");
     return zros_topic_read(sub->_topic, sub->_data);
 }
 
 bool zros_sub_update_available(struct zros_sub* sub)
 {
     __ASSERT(sub != NULL, "zros sub is null");
+    __ASSERT(sub->_initialized, "zros sub not initialized");
     if (sub->_event.signal->signaled == 1) {
         sub->_event.signal->signaled = 0;
         sub->_event.state = K_POLL_STATE_NOT_READY;
@@ -66,18 +69,22 @@ bool zros_sub_update_available(struct zros_sub* sub)
 struct k_poll_event* zros_sub_get_event(struct zros_sub* sub)
 {
     __ASSERT(sub != NULL, "zros sub is null");
+    __ASSERT(sub->_initialized, "zros sub not initialized");
     return &sub->_event;
 }
 
 void zros_sub_fini(struct zros_sub* sub)
 {
     __ASSERT(sub != NULL, "zros sub is null");
+    __ASSERT(sub->_initialized, "zros sub not initialized");
     zros_topic_remove_sub(sub->_topic, sub);
+    sub->_initialized = false;
 }
 
 void zros_sub_get_node(struct zros_sub* sub, struct zros_node** node)
 {
     __ASSERT(sub != NULL, "zros sub is null");
+    __ASSERT(sub->_initialized, "zros sub not initialized");
     node = &sub->_node;
 };
 

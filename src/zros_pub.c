@@ -37,6 +37,7 @@ int zros_pub_init(struct zros_pub* pub, struct zros_node* node, struct zros_topi
     pub->_topic = topic;
     pub->_data = data;
     pub->_node = node;
+    pub->_initialized = true;
 
     return zros_topic_add_pub(topic, pub);
 };
@@ -44,18 +45,22 @@ int zros_pub_init(struct zros_pub* pub, struct zros_node* node, struct zros_topi
 int zros_pub_update(struct zros_pub* pub)
 {
     __ASSERT(pub != NULL, "zros pub is null");
+    __ASSERT(pub->_initialized, "zros pub not initialized");
     return zros_topic_publish(pub->_topic, pub->_data);
 }
 
 void zros_pub_fini(struct zros_pub* pub)
 {
     __ASSERT(pub != NULL, "zros pub is null");
+    __ASSERT(pub->_initialized, "zros pub not initialized");
     zros_topic_remove_pub(pub->_topic, pub);
+    pub->_initialized = false;
 };
 
 void zros_pub_get_node(struct zros_pub* pub, struct zros_node** node)
 {
     __ASSERT(pub != NULL, "zros pub is null");
+    __ASSERT(pub->_initialized, "zros pub not initialized");
     node = &pub->_node;
 };
 

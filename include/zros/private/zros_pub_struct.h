@@ -11,6 +11,7 @@
  * zros pub struct
  ********************************************************************/
 struct zros_pub {
+    bool _initialized;
     sys_snode_t _topic_list_node;
     sys_snode_t _node_list_node;
     struct zros_topic* _topic;

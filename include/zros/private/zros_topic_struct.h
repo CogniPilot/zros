@@ -11,6 +11,7 @@
  * zros topic
  ********************************************************************/
 struct zros_topic {
+    bool _initialized;
     const char* _name;
     sys_snode_t _broker_list_node;
     void* _data; // data pointer for subscriber pull
@@ -20,6 +21,7 @@ struct zros_topic {
     struct k_sem _sem_read; // read semaphore
     struct k_mutex _lock_write; // write mutex
 };
+
 
 // vi: ts=4 sw=4 et
 #endif // ZROS_TOPIC_STRUCT_H

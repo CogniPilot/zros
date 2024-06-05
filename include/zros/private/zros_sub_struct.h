@@ -14,6 +14,7 @@ struct zros_topic;
 struct zros_node;
 
 struct zros_sub {
+    bool _initialized;
     sys_snode_t _topic_list_node;
     sys_snode_t _node_list_node;
     struct zros_topic* _topic;

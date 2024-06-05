@@ -16,6 +16,7 @@ struct zros_node {
     sys_slist_t _subs; // list of subscriptions
     sys_slist_t _pubs; // list of publications
     struct k_mutex _lock;
+    bool _initialized;
 };
 
 #endif // ZROS_NODE_STRUCT_H
