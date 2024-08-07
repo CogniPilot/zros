@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2023 CogniPilot Foundation
+/* * Copyright (c) 2023 CogniPilot Foundation
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <stdio.h>

@@ -25,7 +25,7 @@ LOG_MODULE_DECLARE(zros);
 
 static const k_timeout_t g_topic_timeout = K_MSEC(1);
 
-int _zros_topic_read_write_lock(struct zros_topic* topic)
+int _zros_topic_write_lock(struct zros_topic* topic)
 {
     __ASSERT(topic != NULL, "zros topic is null");
     struct k_sem* read = &topic->_sem_read;
@@ -55,7 +55,7 @@ int _zros_topic_read_write_lock(struct zros_topic* topic)
     return ZROS_OK;
 }
 
-void _zros_topic_read_write_unlock(struct zros_topic* topic)
+void _zros_topic_write_unlock(struct zros_topic* topic)
 {
     __ASSERT(topic != NULL, "zros topic is null");
     struct k_sem* read = &topic->_sem_read;
@@ -81,7 +81,7 @@ int _zros_topic_read_lock(const struct zros_topic* topic)
     if (ret < 0) {
         char name[20];
         zros_topic_get_name(topic, name, sizeof(name));
-        LOG_ERR("topic %s take read failed\n", name);
+        LOG_WRN("topic %s take read failed\n", name);
         return ret;
     }
     return ZROS_OK;
@@ -97,92 +97,91 @@ void _zros_topic_read_unlock(const struct zros_topic* topic)
 int zros_topic_add_pub(struct zros_topic* topic, struct zros_pub* pub)
 {
     __ASSERT(topic != NULL, "zros topic is null");
-    ZROS_RC(_zros_topic_read_write_lock(topic),
-            LOG_ERR("pub read lock failed");
+    ZROS_RC(_zros_topic_write_lock(topic),
+            LOG_ERR("pub write lock failed");
             return rc);
     sys_slist_append(&topic->_pubs, &pub->_topic_list_node);
-    _zros_topic_read_write_unlock(topic);
+    _zros_topic_write_unlock(topic);
     return ZROS_OK;
 }
 
 int zros_topic_remove_pub(struct zros_topic* topic, struct zros_pub* pub)
 {
     __ASSERT(topic != NULL, "zros topic is null");
-    ZROS_RC(_zros_topic_read_write_lock(topic),
+    ZROS_RC(_zros_topic_write_lock(topic),
             LOG_ERR("pub read lock failed");
             return rc);
     sys_slist_find_and_remove(&topic->_pubs, &pub->_topic_list_node);
-    _zros_topic_read_write_unlock(topic);
+    _zros_topic_write_unlock(topic);
     return ZROS_OK;
 }
 
 int zros_topic_add_sub(struct zros_topic* topic, struct zros_sub* sub)
 {
     __ASSERT(topic != NULL, "zros topic is null");
-    ZROS_RC(_zros_topic_read_write_lock(topic),
-            LOG_ERR("topic read lock failed");
+    ZROS_RC(_zros_topic_write_lock(topic),
+            LOG_WRN("topic read lock failed");
             return rc);
     sys_slist_append(&topic->_subs, &sub->_topic_list_node);
-    _zros_topic_read_write_unlock(topic);
+    _zros_topic_write_unlock(topic);
     return ZROS_OK;
 }
 
 int zros_topic_remove_sub(struct zros_topic* topic, struct zros_sub* sub)
 {
     __ASSERT(topic != NULL, "zros topic is null");
-    ZROS_RC(_zros_topic_read_write_lock(topic),
+    ZROS_RC(_zros_topic_write_lock(topic),
             LOG_ERR("topic read lock failed");
             return rc);
     sys_slist_find_and_remove(&topic->_subs, &sub->_topic_list_node);
-    _zros_topic_read_write_unlock(topic);
+    _zros_topic_write_unlock(topic);
     return ZROS_OK;
 }
 
 int zros_topic_publish(struct zros_topic* topic, void* data)
 {
     __ASSERT(topic != NULL, "zros topic is null");
-    char topic_name[30];
-    char node_name[30];
+    // char topic_name[30];
+    // char node_name[30];
+    int64_t now = k_uptime_ticks();
 
-    // read/write lock
-    ZROS_RC(_zros_topic_read_write_lock(topic),
-            LOG_ERR("topic r/w lock failed");
-            return rc);
+    // zros_topic_get_name(topic, topic_name, sizeof(topic_name));
 
-    zros_topic_get_name(topic, topic_name, sizeof(topic_name));
+    // write lock
+    int rc = _zros_topic_write_lock(topic);
+    if (rc < 0) {
+        LOG_ERR("topic r/w lock failed");
+        return rc;
+    }
 
     // write latest data for subscribers
     memcpy(topic->_data, data, topic->_size);
-    // LOG_WRN("\npublishing topic %s", topic_name);
 
-    // write data to subscribers
+    // write unlock
+    _zros_topic_write_unlock(topic);
+
+    // notify subscribers
     struct zros_sub* sub;
     SYS_SLIST_FOR_EACH_CONTAINER(
         &topic->_subs, sub, _topic_list_node)
     {
-        int64_t now = k_uptime_ticks();
-        zros_node_get_name(sub->_node, node_name, sizeof(node_name));
         double hz = (double)CONFIG_SYS_CLOCK_TICKS_PER_SEC / (now - sub->_last_update_ticks);
         if (hz <= sub->_rate_limit_hz) {
             k_poll_signal_raise(&sub->_data_ready, 1);
             sub->_last_update_ticks = now;
-            // LOG_WRN("subscriber %s: update", node_name);
-        } else {
-            // LOG_WRN("subscriber %s: ignore", node_name);
         }
     }
-
-    // read/write unlock
-    _zros_topic_read_write_unlock(topic);
     return ZROS_OK;
 }
 
 int zros_topic_read(struct zros_topic* topic, void* data)
 {
     __ASSERT(topic != NULL, "zros topic is null");
-    ZROS_RC(_zros_topic_read_lock(topic),
-            LOG_ERR("topic read lock failed");
-            return rc);
+    int rc = _zros_topic_read_lock(topic);
+    if (rc < 0) {
+        LOG_ERR("topic read lock failed");
+        return rc;
+    }
     memcpy(data, topic->_data, topic->_size);
     _zros_topic_read_unlock(topic);
     return ZROS_OK;
