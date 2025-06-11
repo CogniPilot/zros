@@ -50,6 +50,11 @@ int zros_sub_update(struct zros_sub* sub)
 {
     __ASSERT(sub != NULL, "zros sub is null");
     __ASSERT(sub->_initialized, "zros sub not initialized");
+
+    ZROS_RC(zros_sub_update_available(sub),
+            LOG_ERR("zros sub update not available");
+            return rc);
+
     return zros_topic_read(sub->_topic, sub->_data);
 }
 
