@@ -1,0 +1,29 @@
+common:
+  tags:
+    - zros
+    - pubsub
+  timeout: 20
+
+tests:
+  zros.basic:
+    tags:
+      - smoke
+    integration_platforms:
+      - native_sim
+    platform_allow:
+      - native_sim
+
+  zros.basic.high_tick_rate:
+    integration_platforms:
+      - native_sim
+    platform_allow:
+      - native_sim
+    extra_configs:
+      - CONFIG_SYS_CLOCK_TICKS_PER_SEC=100000
+
+  zros.basic.mr_vmu_tropic:
+    tags:
+      - smoke
+      - board
+    platform_allow:
+      - mr_vmu_tropic/mimxrt1064

@@ -21,8 +21,10 @@ int zros_sub_init(struct zros_sub* sub, struct zros_node* node, struct zros_topi
     double rate_limit_hz);
 int zros_sub_update(struct zros_sub* sub);
 bool zros_sub_update_available(struct zros_sub* sub);
-struct k_poll_event* zros_sub_get_event(struct zros_sub* sub);
+int zros_sub_wait(struct zros_sub* sub, k_timeout_t timeout);
+int zros_sub_wait_many(struct zros_sub* const* subs, size_t count, k_timeout_t timeout);
 void zros_sub_fini(struct zros_sub* sub);
+__deprecated struct k_poll_event* zros_sub_get_event(struct zros_sub* sub);
 void zros_sub_get_node(struct zros_sub* sub, struct zros_node** node);
 
 #endif // ZROS_SUB_H

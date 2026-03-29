@@ -21,25 +21,33 @@ LOG_MODULE_DECLARE(zros);
 
 int zros_pub_init(struct zros_pub* pub, struct zros_node* node, struct zros_topic* topic, void* data)
 {
+    int rc;
+
     __ASSERT(pub != NULL, "zros pub is null");
     __ASSERT(node != NULL, "zros node is null");
     __ASSERT(topic != NULL, "zros topic is null");
     __ASSERT(data != NULL, "zros data is null");
 
-    // add pub to node
-    ZROS_RC(zros_node_add_pub(node, pub),
-            LOG_ERR("failed to add pub to node\n");
-            return rc);
-
-    // set data
     pub->_node_list_node.next = NULL;
     pub->_topic_list_node.next = NULL;
     pub->_topic = topic;
     pub->_data = data;
     pub->_node = node;
-    pub->_initialized = true;
 
-    return zros_topic_add_pub(topic, pub);
+    rc = zros_node_add_pub(node, pub);
+    if (rc < 0) {
+        LOG_ERR("failed to add pub to node\n");
+        return rc;
+    }
+
+    rc = zros_topic_add_pub(topic, pub);
+    if (rc < 0) {
+        zros_node_remove_pub(node, pub);
+        return rc;
+    }
+
+    pub->_initialized = true;
+    return ZROS_OK;
 };
 
 int zros_pub_update(struct zros_pub* pub)
@@ -61,7 +69,8 @@ void zros_pub_get_node(struct zros_pub* pub, struct zros_node** node)
 {
     __ASSERT(pub != NULL, "zros pub is null");
     __ASSERT(pub->_initialized, "zros pub not initialized");
-    node = &pub->_node;
+    __ASSERT(node != NULL, "zros node output is null");
+    *node = pub->_node;
 };
 
 // vi: ts=4 sw=4 et

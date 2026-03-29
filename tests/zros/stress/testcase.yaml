@@ -1,0 +1,103 @@
+common:
+  tags:
+    - zros
+    - benchmark
+    - stress
+  harness: console
+  harness_config:
+    type: one_line
+    record:
+      regex:
+        - "ZROS_BENCH backend=(?P<backend>\\S+) metric=(?P<metric>\\S+) bytes=(?P<bytes>\\d+) readers=(?P<readers>\\d+) subs=(?P<subs>\\d+) avg_ns=(?P<avg_ns>\\d+) min_ns=(?P<min_ns>\\d+) max_ns=(?P<max_ns>\\d+) iterations=(?P<iterations>\\d+) errors=(?P<errors>\\d+) aux_ops=(?P<aux_ops>\\d+)"
+    regex:
+      - "ZROS_STRESS_DONE"
+  timeout: 120
+
+tests:
+  zros.stress.native_sim:
+    tags:
+      - quick
+    integration_platforms:
+      - native_sim
+    platform_allow:
+      - native_sim
+
+  zros.stress.native_sim.large_payload:
+    tags:
+      - payload
+    integration_platforms:
+      - native_sim
+    platform_allow:
+      - native_sim
+    extra_configs:
+      - CONFIG_ZROS_STRESS_PAYLOAD_BYTES=1024
+      - CONFIG_ZROS_STRESS_ITERATIONS=10000
+      - CONFIG_ZROS_STRESS_CONTENDED_ITERATIONS=3000
+      - CONFIG_ZROS_STRESS_MULTI_WRITER_ITERATIONS=3000
+
+  zros.stress.native_sim.smp:
+    tags:
+      - smp
+    integration_platforms:
+      - native_sim
+    platform_allow:
+      - native_sim
+    extra_configs:
+      - CONFIG_SMP=y
+      - CONFIG_MP_MAX_NUM_CPUS=2
+
+  zros.stress.native_sim.forced_overlap:
+    tags:
+      - overlap
+    integration_platforms:
+      - native_sim
+    platform_allow:
+      - native_sim
+    extra_configs:
+      - CONFIG_SMP=y
+      - CONFIG_MP_MAX_NUM_CPUS=2
+      - CONFIG_ZROS_STRESS_ITERATIONS=10000
+      - CONFIG_ZROS_STRESS_CONTENDED_ITERATIONS=2000
+      - CONFIG_ZROS_STRESS_MULTI_WRITER_ITERATIONS=1000
+      - CONFIG_ZROS_STRESS_CONTENDED_TIMEOUT_MS=10000
+      - CONFIG_ZROS_LOCKLESS_TEST_WRITER_HOLD_YIELDS=32
+      - CONFIG_ZROS_LOCKLESS_TEST_READER_PROBE_YIELDS=8
+
+  zros.stress.native_sim.long:
+    tags:
+      - long
+    integration_platforms:
+      - native_sim
+    platform_allow:
+      - native_sim
+    extra_configs:
+      - CONFIG_ZROS_STRESS_ITERATIONS=100000
+      - CONFIG_ZROS_STRESS_CONTENDED_ITERATIONS=20000
+      - CONFIG_ZROS_STRESS_MULTI_WRITER_ITERATIONS=20000
+
+  zros.stress.mr_vmu_tropic:
+    tags:
+      - board
+      - quick
+    platform_allow:
+      - mr_vmu_tropic/mimxrt1064
+    timeout: 180
+    extra_configs:
+      - CONFIG_ZROS_STRESS_ITERATIONS=10000
+      - CONFIG_ZROS_STRESS_CONTENDED_ITERATIONS=2000
+      - CONFIG_ZROS_STRESS_MULTI_WRITER_ITERATIONS=1000
+
+  zros.stress.mr_vmu_tropic.forced_overlap:
+    tags:
+      - board
+      - overlap
+    platform_allow:
+      - mr_vmu_tropic/mimxrt1064
+    timeout: 180
+    extra_configs:
+      - CONFIG_ZROS_STRESS_ITERATIONS=5000
+      - CONFIG_ZROS_STRESS_CONTENDED_ITERATIONS=1000
+      - CONFIG_ZROS_STRESS_MULTI_WRITER_ITERATIONS=500
+      - CONFIG_ZROS_STRESS_CONTENDED_TIMEOUT_MS=5000
+      - CONFIG_ZROS_LOCKLESS_TEST_WRITER_HOLD_YIELDS=32
+      - CONFIG_ZROS_LOCKLESS_TEST_READER_PROBE_YIELDS=8

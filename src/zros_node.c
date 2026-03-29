@@ -70,6 +70,17 @@ int zros_node_add_pub(struct zros_node* node, struct zros_pub* pub)
     return ZROS_OK;
 }
 
+int zros_node_remove_pub(struct zros_node* node, struct zros_pub* pub)
+{
+    __ASSERT(node != NULL, "zros node is null");
+    __ASSERT(pub != NULL, "zros pub is null");
+    __ASSERT(node->_initialized, "zros node not _initialized");
+    ZROS_RC(_zros_node_lock(node), return rc);
+    sys_slist_find_and_remove(&node->_pubs, &pub->_node_list_node);
+    _zros_node_unlock(node);
+    return ZROS_OK;
+}
+
 void zros_node_fini(struct zros_node* node)
 {
     __ASSERT(node != NULL, "zros node is null");

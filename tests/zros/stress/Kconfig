@@ -1,0 +1,81 @@
+mainmenu "zros stress benchmark"
+
+source "Kconfig.zephyr"
+
+config ZROS_STRESS_ITERATIONS
+	int "Iterations for single-threaded benchmarks"
+	range 100 1000000
+	default 20000
+	help
+	  Number of iterations used for direct publish/read and wrapper overhead
+	  measurements.
+
+config ZROS_STRESS_BATCH_SIZE
+	int "Operations per timing batch"
+	range 1 10000
+	default 100
+	help
+	  Number of operations grouped under one timing sample. This improves
+	  measurement resolution on platforms where a single operation is below
+	  the timer granularity.
+
+config ZROS_STRESS_CONTENDED_ITERATIONS
+	int "Iterations for contended publish benchmark"
+	range 100 1000000
+	default 5000
+	help
+	  Number of publishes measured while reader threads are concurrently
+	  reading the same topic.
+
+config ZROS_STRESS_MULTI_WRITER_ITERATIONS
+	int "Iterations per writer in multi-writer benchmark"
+	range 100 1000000
+	default 5000
+	help
+	  Number of publishes performed by each writer thread in the
+	  multi-writer contention benchmark.
+
+config ZROS_STRESS_READER_COUNT
+	int "Concurrent reader threads"
+	range 1 12
+	default 4
+	help
+	  Number of reader threads used in the contended publish benchmark.
+
+config ZROS_STRESS_WRITER_COUNT
+	int "Concurrent writer threads"
+	range 2 12
+	default 4
+	help
+	  Number of writer threads used in the multi-writer publish
+	  benchmark.
+
+config ZROS_STRESS_SUBSCRIBER_COUNT
+	int "Registered subscribers for fanout benchmark"
+	range 1 128
+	default 32
+	help
+	  Number of zros subscribers attached to the topic in the
+	  publish-side fanout benchmark.
+
+config ZROS_STRESS_PAYLOAD_BYTES
+	int "Payload size in bytes"
+	range 4 1024
+	default 64
+	help
+	  Number of bytes copied in each benchmark message payload.
+
+config ZROS_STRESS_THREAD_STACK_SIZE
+	int "Reader thread stack size"
+	range 1024 8192
+	default 1536
+	help
+	  Stack size for each reader thread in the contended benchmark.
+
+config ZROS_STRESS_CONTENDED_TIMEOUT_MS
+	int "Timeout for the contended benchmark"
+	range 100 60000
+	default 2000
+	help
+	  Maximum time spent waiting for the contended publisher benchmark to
+	  finish before it is aborted and reported as stalled.

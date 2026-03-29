@@ -3,10 +3,31 @@
 
 config ZROS
   bool "Enables zros"
+  select EVENTS
   help
     This option enables zros
 
 if ZROS
+
+config ZROS_LOCKLESS_TEST_WRITER_HOLD_YIELDS
+	int "Lockless writer hold yields"
+	range 0 10000
+	default 0
+	help
+	  Test-only knob. When non-zero, the double-buffer topic backends yield
+	  this many times after copying into the inactive buffer and before
+	  publishing the new generation. This widens the overlap window for
+	  contention benchmarks.
+
+config ZROS_LOCKLESS_TEST_READER_PROBE_YIELDS
+	int "Lockless reader probe yields"
+	range 0 10000
+	default 0
+	help
+	  Test-only knob. When non-zero, the double-buffer topic backends yield
+	  this many times after a reader samples the published generation and
+	  before it copies the selected payload slot. This makes it easier to
+	  force publish/read overlap in benchmarks.
 
 module = ZROS
 module-str = ros
