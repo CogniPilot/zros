@@ -8,9 +8,9 @@
 #include <zephyr/kernel.h>
 #include <zephyr/ztest.h>
 
-#include <zros/private/zros_node_struct.h>
-#include <zros/private/zros_pub_struct.h>
-#include <zros/private/zros_sub_struct.h>
+#include <zros/zros_node.h>
+#include <zros/zros_pub.h>
+#include <zros/zros_sub.h>
 #include <zros/private/zros_topic_struct.h>
 #include <zros/zros_broker.h>
 #include <zros/zros_node.h>
@@ -26,6 +26,7 @@ struct sample_msg {
 
 ZROS_TOPIC_DEFINE(sample, struct sample_msg);
 ZROS_TOPIC_DEFINE_SINGLE_PUBLISHER(sample_single_pub, struct sample_msg);
+ZROS_TOPIC_DEFINE(broker_topic, struct sample_msg);
 
 struct zros_fixture {
 	struct zros_node pub_node;
@@ -85,6 +86,14 @@ static void count_nodes(const struct zros_node *node, void *data)
 	size_t *count = data;
 
 	ARG_UNUSED(node);
+	(*count)++;
+}
+
+static void count_topics(const struct zros_topic *topic, void *data)
+{
+	size_t *count = data;
+
+	ARG_UNUSED(topic);
 	(*count)++;
 }
 
@@ -310,6 +319,45 @@ ZTEST(zros_basic, test_broker_tracks_live_nodes)
 	fixture_fini(&fixture);
 	zassert_ok(zros_broker_iterate_nodes(count_nodes, &after));
 	zassert_equal(after, baseline, "broker leaked nodes after cleanup");
+}
+
+ZTEST(zros_basic, test_broker_tracks_attached_topics)
+{
+	struct zros_node node = {0};
+	struct zros_pub pub = {0};
+	struct sample_msg msg = {0};
+	size_t baseline = 0U;
+	size_t during = 0U;
+	size_t after = 0U;
+
+	zassert_ok(zros_broker_iterate_topic(count_topics, &baseline));
+
+	zros_node_init(&node, "broker_topic_pub");
+	zassert_ok(zros_pub_init(&pub, &node, &topic_broker_topic, &msg));
+
+	zassert_ok(zros_broker_iterate_topic(count_topics, &during));
+	zassert_equal(during, baseline + 1U, "broker did not register attached topic");
+
+	zros_pub_fini(&pub);
+	zros_node_fini(&node);
+
+	zassert_ok(zros_broker_iterate_topic(count_topics, &after));
+	zassert_equal(after, during, "attached topics should remain discoverable");
+}
+
+ZTEST(zros_basic, test_mutex_topic_generation_increments_on_publish)
+{
+	struct sample_msg tx = {0};
+	uint32_t before;
+	uint32_t after;
+
+	before = (uint32_t)atomic_get(&topic_sample._lockless_generation);
+	fill_msg(&tx, before + 1U, 123);
+	zassert_ok(zros_topic_publish(&topic_sample, &tx));
+	zassert_ok(zros_topic_publish(&topic_sample, &tx));
+	after = (uint32_t)atomic_get(&topic_sample._lockless_generation);
+
+	zassert_equal(after, before + 2U, "mutex topic generation did not increment");
 }
 
 ZTEST_SUITE(zros_basic, NULL, NULL, NULL, NULL, NULL);

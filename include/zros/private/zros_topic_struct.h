@@ -26,6 +26,7 @@ struct zros_topic {
     int _size; // size of data
     sys_slist_t _subs; // list of subscriptions
     sys_slist_t _pubs; // list of publications
+    atomic_t _pub_count; // registered publisher count
     atomic_t _lockless_generation; // published slot generation for double buffering
     atomic_t _lockless_read_retries; // reader retries caused by concurrent publishes
     atomic_t _lockless_write_retries; // writer-side contentions for lockless publishes

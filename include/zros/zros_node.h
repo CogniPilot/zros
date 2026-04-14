@@ -10,14 +10,26 @@
 /********************************************************************
  * zros node
  ********************************************************************/
-// forward declarations
-struct zros_node;
+/*
+ * Public concrete type so applications can allocate nodes without
+ * reaching into zros/private headers. Fields are internal.
+ */
+struct zros_node {
+    const char* _name;
+    sys_snode_t _broker_list_node;
+    sys_slist_t _subs;
+    sys_slist_t _pubs;
+    struct k_mutex _lock;
+    bool _initialized;
+};
+
 struct zros_sub;
 struct zros_pub;
 
 // public api
 void zros_node_init(struct zros_node* node, const char* name);
 int zros_node_add_sub(struct zros_node* node, struct zros_sub* sub);
+int zros_node_remove_sub(struct zros_node* node, struct zros_sub* sub);
 int zros_node_add_pub(struct zros_node* node, struct zros_pub* pub);
 int zros_node_remove_pub(struct zros_node* node, struct zros_pub* pub);
 int zros_node_get_name(const struct zros_node* node, char* buf, size_t n);

@@ -10,13 +10,26 @@
 /********************************************************************
  * zros_sub
  ********************************************************************/
-// forward declarations
-struct zros_sub;
 struct zros_topic;
 struct zros_node;
 
+/* Public concrete type so applications can allocate subscribers. */
+struct zros_sub {
+    bool _initialized;
+    bool _legacy_poll_enabled;
+    sys_snode_t _topic_list_node;
+    sys_snode_t _node_list_node;
+    struct zros_topic* _topic;
+    void* _data;
+    struct k_poll_signal _data_ready;
+    double _rate_limit_hz;
+    int64_t _last_update_ticks;
+    uint32_t _last_seen_generation;
+    struct k_poll_event _event;
+    struct zros_node* _node;
+};
+
 // public api
-struct zros_node;
 int zros_sub_init(struct zros_sub* sub, struct zros_node* node, struct zros_topic* topic, void* data,
     double rate_limit_hz);
 int zros_sub_update(struct zros_sub* sub);

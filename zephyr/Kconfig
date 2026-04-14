@@ -9,6 +9,31 @@ config ZROS
 
 if ZROS
 
+config ZROS_SHELL
+	bool "Enable zros shell diagnostics"
+	depends on SHELL
+	help
+	  Adds generic broker-backed node and topic shell commands plus optional
+	  per-topic pretty-printer registration.
+
+config ZROS_SHELL_THREAD_STACK_SIZE
+	int "zros shell watch thread stack size"
+	depends on ZROS_SHELL
+	default 2048
+	range 1024 16384
+	help
+	  Stack size for the low-priority zros shell echo/hz watcher thread.
+
+config ZROS_SHELL_MAX_TOPIC_SIZE
+	int "Maximum topic size for generic zros shell echo"
+	depends on ZROS_SHELL
+	default 256
+	range 32 8192
+	help
+	  Largest topic payload the generic shell will copy for default echo.
+	  Topics larger than this need a registered pretty-printer or a larger
+	  buffer.
+
 config ZROS_LOCKLESS_TEST_WRITER_HOLD_YIELDS
 	int "Lockless writer hold yields"
 	range 0 10000

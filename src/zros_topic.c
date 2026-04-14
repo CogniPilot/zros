@@ -14,6 +14,7 @@
 #include <zros/private/zros_sub_struct.h>
 #include <zros/private/zros_topic_struct.h>
 #include <zros/private/zros_wait_internal.h>
+#include <zros/zros_broker.h>
 #include <zros/zros_common.h>
 #include <zros/zros_node.h>
 #include <zros/zros_pub.h>
@@ -102,6 +103,36 @@ static void _zros_topic_meta_unlock(struct zros_topic* topic)
 {
     __ASSERT(topic != NULL, "zros topic is null");
     k_mutex_unlock(&topic->_lock_meta);
+}
+
+static int _zros_topic_register_if_needed(struct zros_topic* topic)
+{
+    bool should_register = false;
+    int rc;
+
+    __ASSERT(topic != NULL, "zros topic is null");
+
+    rc = _zros_topic_meta_lock(topic);
+    if (rc != 0) {
+        return rc;
+    }
+    if (!topic->_initialized) {
+        topic->_initialized = true;
+        should_register = true;
+    }
+    _zros_topic_meta_unlock(topic);
+
+    if (should_register) {
+        rc = zros_broker_add_topic(topic);
+        if (rc != 0) {
+            ZROS_RC(_zros_topic_meta_lock(topic), return rc);
+            topic->_initialized = false;
+            _zros_topic_meta_unlock(topic);
+            return rc;
+        }
+    }
+
+    return ZROS_OK;
 }
 
 int _zros_topic_write_lock(struct zros_topic* topic)
@@ -289,6 +320,7 @@ int zros_topic_add_pub(struct zros_topic* topic, struct zros_pub* pub)
 {
     __ASSERT(topic != NULL, "zros topic is null");
     __ASSERT(pub != NULL, "zros pub is null");
+    ZROS_RC(_zros_topic_register_if_needed(topic), return rc);
     ZROS_RC(_zros_topic_meta_lock(topic),
             LOG_ERR("pub metadata lock failed");
             return rc);
@@ -299,6 +331,7 @@ int zros_topic_add_pub(struct zros_topic* topic, struct zros_pub* pub)
     }
 
     sys_slist_append(&topic->_pubs, &pub->_topic_list_node);
+    atomic_inc(&topic->_pub_count);
     _zros_topic_meta_unlock(topic);
     return ZROS_OK;
 }
@@ -310,7 +343,9 @@ int zros_topic_remove_pub(struct zros_topic* topic, struct zros_pub* pub)
     ZROS_RC(_zros_topic_meta_lock(topic),
             LOG_ERR("pub metadata lock failed");
             return rc);
-    sys_slist_find_and_remove(&topic->_pubs, &pub->_topic_list_node);
+    if (sys_slist_find_and_remove(&topic->_pubs, &pub->_topic_list_node)) {
+        atomic_dec(&topic->_pub_count);
+    }
     _zros_topic_meta_unlock(topic);
     return ZROS_OK;
 }
@@ -319,6 +354,7 @@ int zros_topic_add_sub(struct zros_topic* topic, struct zros_sub* sub)
 {
     __ASSERT(topic != NULL, "zros topic is null");
     __ASSERT(sub != NULL, "zros sub is null");
+    ZROS_RC(_zros_topic_register_if_needed(topic), return rc);
     ZROS_RC(_zros_topic_meta_lock(topic),
             LOG_WRN("topic metadata lock failed");
             return rc);
@@ -366,6 +402,7 @@ int zros_topic_publish(struct zros_topic* topic, void* data)
         }
 
         memcpy(topic->_data, data, topic->_size);
+        atomic_inc(&topic->_lockless_generation);
         now = k_uptime_ticks();
         _zros_topic_notify_subscribers_locked(topic, now);
         _zros_topic_meta_unlock(topic);

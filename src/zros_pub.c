@@ -62,6 +62,7 @@ void zros_pub_fini(struct zros_pub* pub)
     __ASSERT(pub != NULL, "zros pub is null");
     __ASSERT(pub->_initialized, "zros pub not initialized");
     zros_topic_remove_pub(pub->_topic, pub);
+    zros_node_remove_pub(pub->_node, pub);
     pub->_initialized = false;
 };
 

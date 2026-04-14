@@ -59,6 +59,17 @@ int zros_node_add_sub(struct zros_node* node, struct zros_sub* sub)
     return ZROS_OK;
 }
 
+int zros_node_remove_sub(struct zros_node* node, struct zros_sub* sub)
+{
+    __ASSERT(node != NULL, "zros node is null");
+    __ASSERT(sub != NULL, "zros sub is null");
+    __ASSERT(node->_initialized, "zros node not _initialized");
+    ZROS_RC(_zros_node_lock(node), return rc);
+    sys_slist_find_and_remove(&node->_subs, &sub->_node_list_node);
+    _zros_node_unlock(node);
+    return ZROS_OK;
+}
+
 int zros_node_add_pub(struct zros_node* node, struct zros_pub* pub)
 {
     __ASSERT(node != NULL, "zros node is null");

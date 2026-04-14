@@ -10,10 +10,18 @@
 /********************************************************************
  * zros pub
  ********************************************************************/
-// forwad declarations
+/* Public concrete type so applications can allocate publishers. */
 struct zros_topic;
-struct zros_pub;
 struct zros_node;
+
+struct zros_pub {
+    bool _initialized;
+    sys_snode_t _topic_list_node;
+    sys_snode_t _node_list_node;
+    struct zros_topic* _topic;
+    void* _data;
+    struct zros_node* _node;
+};
 
 // public api
 int zros_pub_init(struct zros_pub* pub, struct zros_node* node, struct zros_topic* topic, void* data);
