@@ -18,9 +18,9 @@
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/time_units.h>
 
-#include <zros/private/zros_node_struct.h>
-#include <zros/private/zros_pub_struct.h>
-#include <zros/private/zros_sub_struct.h>
+#include <zros/zros_node.h>
+#include <zros/zros_pub.h>
+#include <zros/zros_sub.h>
 #include <zros/private/zros_topic_struct.h>
 #include <zros/zros_node.h>
 #include <zros/zros_pub.h>

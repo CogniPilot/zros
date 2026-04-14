@@ -327,6 +327,7 @@ void zros_sub_fini(struct zros_sub* sub)
     }
 
     zros_topic_remove_sub(sub->_topic, sub);
+    zros_node_remove_sub(sub->_node, sub);
     sub->_initialized = false;
 }
 

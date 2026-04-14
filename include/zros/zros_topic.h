@@ -30,6 +30,7 @@
         ._size = sizeof(g_msg_##NAME),                                 \
         ._subs = SYS_SLIST_STATIC_INIT(topic_##NAME._subs),            \
         ._pubs = SYS_SLIST_STATIC_INIT(topic_##NAME._pubs),            \
+        ._pub_count = ATOMIC_INIT(0),                                  \
         ._broker_list_node = {                                         \
             .next = NULL,                                              \
         },                                                             \
@@ -58,6 +59,7 @@
         ._size = sizeof(g_msg_##NAME[0]),                              \
         ._subs = SYS_SLIST_STATIC_INIT(topic_##NAME._subs),            \
         ._pubs = SYS_SLIST_STATIC_INIT(topic_##NAME._pubs),            \
+        ._pub_count = ATOMIC_INIT(0),                                  \
         ._broker_list_node = {                                         \
             .next = NULL,                                              \
         },                                                             \

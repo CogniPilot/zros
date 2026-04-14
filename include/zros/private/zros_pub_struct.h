@@ -5,19 +5,7 @@
 #ifndef ZROS_PUB_STRUCT_H
 #define ZROS_PUB_STRUCT_H
 
-#include <zephyr/kernel.h>
-
-/********************************************************************
- * zros pub struct
- ********************************************************************/
-struct zros_pub {
-    bool _initialized;
-    sys_snode_t _topic_list_node;
-    sys_snode_t _node_list_node;
-    struct zros_topic* _topic;
-    void* _data;
-    struct zros_node* _node;
-};
+#include <zros/zros_pub.h>
 
 // vi: ts=4 sw=4 et
 #endif // ZROS_PUB_STRUCT_H

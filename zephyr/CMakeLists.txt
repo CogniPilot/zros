@@ -19,4 +19,8 @@ zephyr_library_sources(
   ${ZROS_DIR}/src/zros_topic.c
   )
 
+zephyr_library_sources_ifdef(CONFIG_ZROS_SHELL
+  ${ZROS_DIR}/src/zros_shell.c
+  )
+
 endif()
