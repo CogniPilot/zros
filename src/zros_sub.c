@@ -119,8 +119,7 @@ static bool _zros_sub_single_publisher_ready(struct zros_sub* sub, int64_t now_t
 {
     uint32_t generation = (uint32_t)atomic_get(&sub->_topic->_lockless_generation);
 
-    return (generation != sub->_last_seen_generation) &&
-           _zros_sub_rate_limit_allows(sub, now_ticks);
+    return (generation != sub->_last_seen_generation) && _zros_sub_rate_limit_allows(sub, now_ticks);
 }
 
 static void _zros_sub_single_publisher_legacy_signal_consume(struct zros_sub* sub)
@@ -206,8 +205,8 @@ int zros_sub_init(struct zros_sub* sub, struct zros_node* node, struct zros_topi
 
     // add pub to node
     ZROS_RC(zros_node_add_sub(node, sub),
-            LOG_ERR("failed to add push sub to node");
-            return rc);
+        LOG_ERR("failed to add push sub to node");
+        return rc);
 
     // set data
     sub->_topic = topic;
@@ -297,9 +296,7 @@ int zros_sub_wait(struct zros_sub* sub, k_timeout_t timeout)
             if (K_TIMEOUT_EQ(wait_timeout, K_NO_WAIT)) {
                 continue;
             }
-            if (!K_TIMEOUT_EQ(remaining, K_FOREVER) &&
-                (K_TIMEOUT_EQ(wait_timeout, K_FOREVER) ||
-                 wait_timeout.ticks > remaining.ticks)) {
+            if (!K_TIMEOUT_EQ(remaining, K_FOREVER) && (K_TIMEOUT_EQ(wait_timeout, K_FOREVER) || wait_timeout.ticks > remaining.ticks)) {
                 wait_timeout = remaining;
             }
         } else {

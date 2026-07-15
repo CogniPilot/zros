@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
 
 #include <zephyr/logging/log.h>
@@ -112,8 +112,8 @@ int _zros_topic_write_lock(struct zros_topic* topic)
 
     // take write semaphore
     ZROS_RC(k_mutex_lock(write, g_topic_timeout),
-            LOG_ERR("write lock failed\n");
-            return rc);
+        LOG_ERR("write lock failed\n");
+        return rc);
 
     // take read semaphore
     unsigned int read_take_count = 0;
@@ -271,8 +271,8 @@ static void _zros_topic_notify_legacy_poll_subscribers(struct zros_topic* topic)
     }
 
     ZROS_RC(_zros_topic_meta_lock(topic),
-            LOG_ERR("topic metadata lock failed");
-            return);
+        LOG_ERR("topic metadata lock failed");
+        return);
 
     SYS_SLIST_FOR_EACH_CONTAINER(
         &topic->_subs, sub, _topic_list_node)
@@ -290,8 +290,8 @@ int zros_topic_add_pub(struct zros_topic* topic, struct zros_pub* pub)
     __ASSERT(topic != NULL, "zros topic is null");
     __ASSERT(pub != NULL, "zros pub is null");
     ZROS_RC(_zros_topic_meta_lock(topic),
-            LOG_ERR("pub metadata lock failed");
-            return rc);
+        LOG_ERR("pub metadata lock failed");
+        return rc);
 
     if (_zros_topic_is_single_publisher(topic) && !sys_slist_is_empty(&topic->_pubs)) {
         _zros_topic_meta_unlock(topic);
@@ -308,8 +308,8 @@ int zros_topic_remove_pub(struct zros_topic* topic, struct zros_pub* pub)
     __ASSERT(topic != NULL, "zros topic is null");
     __ASSERT(pub != NULL, "zros pub is null");
     ZROS_RC(_zros_topic_meta_lock(topic),
-            LOG_ERR("pub metadata lock failed");
-            return rc);
+        LOG_ERR("pub metadata lock failed");
+        return rc);
     sys_slist_find_and_remove(&topic->_pubs, &pub->_topic_list_node);
     _zros_topic_meta_unlock(topic);
     return ZROS_OK;
@@ -320,8 +320,8 @@ int zros_topic_add_sub(struct zros_topic* topic, struct zros_sub* sub)
     __ASSERT(topic != NULL, "zros topic is null");
     __ASSERT(sub != NULL, "zros sub is null");
     ZROS_RC(_zros_topic_meta_lock(topic),
-            LOG_WRN("topic metadata lock failed");
-            return rc);
+        LOG_WRN("topic metadata lock failed");
+        return rc);
     sys_slist_append(&topic->_subs, &sub->_topic_list_node);
     atomic_inc(&topic->_sub_count);
     _zros_topic_meta_unlock(topic);
@@ -333,8 +333,8 @@ int zros_topic_remove_sub(struct zros_topic* topic, struct zros_sub* sub)
     __ASSERT(topic != NULL, "zros topic is null");
     __ASSERT(sub != NULL, "zros sub is null");
     ZROS_RC(_zros_topic_meta_lock(topic),
-            LOG_ERR("topic metadata lock failed");
-            return rc);
+        LOG_ERR("topic metadata lock failed");
+        return rc);
     if (sys_slist_find_and_remove(&topic->_subs, &sub->_topic_list_node)) {
         atomic_dec(&topic->_sub_count);
     }
@@ -418,8 +418,8 @@ int zros_topic_iterate_pub(struct zros_topic* topic, zros_pub_iterator_t* iter, 
     __ASSERT(topic != NULL, "zros topic is null");
     __ASSERT(iter != NULL, "zros pub iterator is null");
     ZROS_RC(_zros_topic_meta_lock(topic),
-            LOG_ERR("topic metadata lock failed");
-            return rc);
+        LOG_ERR("topic metadata lock failed");
+        return rc);
     struct zros_pub* pub;
     SYS_SLIST_FOR_EACH_CONTAINER(
         &topic->_pubs, pub, _topic_list_node)
@@ -436,8 +436,8 @@ int zros_topic_iterate_sub(struct zros_topic* topic, zros_sub_iterator_t* iter, 
     __ASSERT(topic != NULL, "zros topic is null");
     __ASSERT(iter != NULL, "zros sub iterator is null");
     ZROS_RC(_zros_topic_meta_lock(topic),
-            LOG_ERR("topic metadata lock failed");
-            return rc);
+        LOG_ERR("topic metadata lock failed");
+        return rc);
     struct zros_sub* sub;
     SYS_SLIST_FOR_EACH_CONTAINER(
         &topic->_subs, sub, _topic_list_node)

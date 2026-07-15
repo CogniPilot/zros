@@ -26,8 +26,8 @@ int _zros_broker_lock()
 {
     __ASSERT(&_broker != NULL, "zros broker is null");
     ZROS_RC(k_mutex_lock(&_broker._lock, g_broker_timeout),
-            LOG_ERR("failed to lock broker");
-            return rc);
+        LOG_ERR("failed to lock broker");
+        return rc);
     return ZROS_OK;
 };
 
