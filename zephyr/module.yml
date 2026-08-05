@@ -2,6 +2,5 @@ name: zros
 build:
   kconfig: zephyr/Kconfig
   cmake: zephyr
-  depends:
 tests:
   - tests
