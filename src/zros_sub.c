@@ -230,14 +230,21 @@ int zros_sub_update(struct zros_sub* sub)
     __ASSERT(sub != NULL, "zros sub is null");
     __ASSERT(sub->_initialized, "zros sub not initialized");
 
-    if (!zros_sub_update_available(sub)) {
-        return -EAGAIN;
-    }
-
     if (_zros_sub_is_single_publisher(sub)) {
+        if (!zros_sub_update_available(sub)) {
+            return -EAGAIN;
+        }
+
         return _zros_sub_single_publisher_update(sub);
     }
 
+    // the mutex backend consumes the pending signal here, so that
+    // zros_sub_update_available() stays a side effect free predicate
+    if (!_zros_sub_signal_is_pending(sub)) {
+        return -EAGAIN;
+    }
+
+    _zros_sub_signal_reset(sub);
     return zros_topic_read(sub->_topic, sub->_data);
 }
 
@@ -252,15 +259,9 @@ bool zros_sub_update_available(struct zros_sub* sub)
 
     if (_zros_sub_is_single_publisher(sub)) {
         _zros_sub_single_publisher_legacy_signal_consume(sub);
-        return _zros_sub_single_publisher_ready(sub, now_ticks);
     }
 
-    if (!_zros_sub_signal_is_pending(sub)) {
-        return false;
-    }
-
-    _zros_sub_signal_reset(sub);
-    return true;
+    return _zros_sub_peek_update_available(sub, now_ticks);
 }
 
 int zros_sub_wait(struct zros_sub* sub, k_timeout_t timeout)

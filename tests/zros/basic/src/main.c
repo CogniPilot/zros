@@ -220,6 +220,31 @@ ZTEST(zros_basic, test_wait_many_detects_mixed_backend_updates)
 	zros_node_fini(&current_pub_node);
 }
 
+ZTEST(zros_basic, test_update_available_is_a_pure_peek)
+{
+	struct zros_fixture fixture;
+
+	fixture_init(&fixture, &topic_sample, "peek", 1.0e9);
+	fill_msg(&fixture.pub_msg, 61U, 6100);
+	k_sleep(K_MSEC(2));
+
+	zassert_ok(zros_pub_update(&fixture.pub));
+	zassert_true(zros_sub_update_available(&fixture.sub),
+		     "published message should be reported as available");
+	zassert_true(zros_sub_update_available(&fixture.sub),
+		     "update_available must not consume the pending update");
+
+	zassert_ok(zros_sub_update(&fixture.sub));
+	assert_msg_eq(&fixture.sub_msg, &fixture.pub_msg);
+
+	zassert_false(zros_sub_update_available(&fixture.sub),
+		      "update should have consumed the pending update");
+	zassert_equal(zros_sub_update(&fixture.sub), -EAGAIN,
+		      "second update without a publish should report -EAGAIN");
+
+	fixture_fini(&fixture);
+}
+
 ZTEST(zros_basic, test_single_publisher_newest_value_wins)
 {
 	struct zros_fixture fixture;

@@ -19,6 +19,11 @@ struct zros_node;
 struct zros_node;
 int zros_sub_init(struct zros_sub* sub, struct zros_node* node, struct zros_topic* topic, void* data,
     double rate_limit_hz);
+// zros_sub_update() is the only consumer of a pending update: it copies the
+// topic data and clears the pending state, or returns -EAGAIN when nothing is
+// pending. zros_sub_update_available() only reports whether the next
+// zros_sub_update() would succeed, so repeated calls return the same answer
+// until zros_sub_update() runs.
 int zros_sub_update(struct zros_sub* sub);
 bool zros_sub_update_available(struct zros_sub* sub);
 int zros_sub_wait(struct zros_sub* sub, k_timeout_t timeout);
