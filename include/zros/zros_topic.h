@@ -14,7 +14,7 @@
  *   Compatibility default. Uses the existing mutex/semaphore backend.
  *
  * ZROS_TOPIC_DEFINE_SINGLE_PUBLISHER():
- *   RDD2-oriented latest-value backend for topics with one registered
+ *   Low-latency latest-value backend for topics with one registered
  *   publisher. Uses double-buffered payload storage, atomic writer
  *   arbitration, subscriber-side generation checks, and topic-level event
  *   wakeups with O(1) publish-side notification.
